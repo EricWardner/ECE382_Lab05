@@ -15,6 +15,8 @@ TACTL = ID_3
 
 2) How long does each timer count last?
 
+1 us
+
 
 
 <table class="table table-striped table-bordered">
