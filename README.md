@@ -101,3 +101,70 @@ TACTL = ID_3
 </tr>
 </tbody>
 </table>
+
+
+###Lab Functionality
+The transition to functionality started with the start5.c file which contained the outline of the code pictured below
+
+![alt tag](http://ece382.com/labs/lab5/schematic.jpg)
+
+The init funciton was already complete so I began with the interrupts. 
+
+#####Part2 Vector
+First to check if it was rising or falling edge the switch on pin was created. Case 0 is falling edge and Case  1 is rising edge.
+
+```C
+#pragma vector = PORT2_VECTOR			// This is from the MSP430G2553.h file
+
+__interrupt void pinChange (void) {
+
+	int8	pin;
+	int16	pulseDuration;			// The timer is 16-bits
+
+	if (IR_PIN)		pin=1;	else pin=0;
+
+	switch (pin) {					// read the current pin level
+		case 0:						// !!!!!!!!!NEGATIVE EDGE!!!!!!!!!!
+			pulseDuration = TAR;
+			if((pulseDuration < maxLogic0Pulse) && (pulseDuration > minLogic0Pulse)){
+				irPacket = (irPacket << 1) | 0;
+			}
+			if((pulseDuration < maxLogic1Pulse) && (pulseDuration > minLogic1Pulse)){
+				irPacket = (irPacket << 1) | 1;
+			}
+			packetData[packetIndex++] = pulseDuration;
+			TACTL = 0;				//turn off timer A e.w.
+			LOW_2_HIGH; 				// Setup pin interrupr on positive edge
+			break;
+
+		case 1:							// !!!!!!!!POSITIVE EDGE!!!!!!!!!!!
+			TAR = 0x0000;						// time measurements are based at time 0
+			TA0CCR0 = 0x2710;
+			TACTL = ID_3 | TASSEL_2 | MC_1 | TAIE;
+			HIGH_2_LOW; 						// Setup pin interrupr on positive edge
+			break;
+	} // end switch
+
+	P2IFG &= ~BIT6;			// Clear the interrupt flag to prevent immediate ISR re-entry
+
+} // end pinChange ISR
+```
+Case 1: The most important aspec tof case 1 was building the IR data packet. This was done using known values for length of 1s and 0s from a given remote.
+
+Case 2: On the positive edge, the timers and interrups had to be properly set. TACCR0 was calculated for the proper rollover time. 
+
+#####Timer A Vector
+The timer interrupt was a bit similar to the rising edge of the hardware interrupt in the sense that it managed settings of timers and flags. The following code accomplished what is in the picture under TimerA
+
+```C
+#pragma vector = TIMER0_A1_VECTOR			// This is from the MSP430G2553.h file
+__interrupt void timerOverflow (void) {
+
+	TACTL = 0;
+	TACTL ^= TAIE;
+	packetIndex = 0;
+	newPacket = TRUE;
+	TACTL &= ~TAIFG;
+}
+```
+
