@@ -102,6 +102,8 @@ TACTL = ID_3
 </tbody>
 </table>
 
+![alt tag](https://raw.githubusercontent.com/EricWardner/ECE382_Lab05/master/day1waveform.png)
+
 ###Setup/Goals
 The main goal of the lab was to write a program that would allow the MSP430 to recieve and interpret data from an IR sensor and from that data turn an LED on and off. The IR data would come from a common remote control. 
 
