@@ -149,12 +149,12 @@ __interrupt void pinChange (void) {
 
 } // end pinChange ISR
 ```
-Case 1: The most important aspec tof case 1 was building the IR data packet. This was done using known values for length of 1s and 0s from a given remote.
+Case 1: The most important aspect of case 1 was building the IR data packet. This was done using known values for length of 1s and 0s from a given remote.
 
 Case 2: On the positive edge, the timers and interrups had to be properly set. TACCR0 was calculated for the proper rollover time. 
 
 #####Timer A Vector
-The timer interrupt was a bit similar to the rising edge of the hardware interrupt in the sense that it managed settings of timers and flags. The following code accomplished what is in the picture under TimerA
+The timer interrupt was a bit similar to the rising edge of the hardware interrupt in the sense that it managed settings of timers and flags. The following code accomplished what is in the picture under TimerA. It is really important to understand how the masks work and howthe XOR and bit manipulation gives the proper functionality. 
 
 ```C
 #pragma vector = TIMER0_A1_VECTOR			// This is from the MSP430G2553.h file
@@ -167,4 +167,10 @@ __interrupt void timerOverflow (void) {
 	TACTL &= ~TAIFG;
 }
 ```
+
+
+
+
+[![IMAGE ALT TEXT HERE](http://img.youtube.com/vi/P8m6kqYVIsk/0.jpg)](http://www.youtube.com/watch?v=YOUTUBE_VIDEO_P8m6kqYVIsk)
+
 
