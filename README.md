@@ -102,6 +102,24 @@ TACTL = ID_3
 </tbody>
 </table>
 
+```C
+while (1)  {
+
+	while(IR_DECODER_PIN != 0);			// IR input is nominally logic 1
+
+	for(i=0; i<SAMPLE_SIZE; i++) {
+
+32		TAR = 0;						// reset timer and
+33		while(IR_DECODER_PIN==0);		// wait while IR is logic 0
+34		time0[i] = TAR;					// and store timer A
+35
+36		TAR = 0;						// reset timer and
+37		while(IR_DECODER_PIN != 0);		// wait while IR is logic 1
+38		time1[i] = TAR;					// and store timer A
+
+	} 
+} 
+```
 ![alt tag](https://raw.githubusercontent.com/EricWardner/ECE382_Lab05/master/day1waveform.png)
 
 ###Setup/Goals
