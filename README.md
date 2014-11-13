@@ -109,7 +109,7 @@ The initial set up was fairly straight-forward. It involved attaching the pins f
 
 A simple diagram for the IR sensor is shown here
 
-![alt tag](http://imgur.com/TR597IB)
+![alt tag](http://i.imgur.com/TR597IB.png)
 
 Here is the actual connection to the MSP430
 
