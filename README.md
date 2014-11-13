@@ -102,9 +102,23 @@ TACTL = ID_3
 </tbody>
 </table>
 
+###Setup/Goals
+The main goal of the lab was to write a program that would allow the MSP430 to recieve and interpret data from an IR sensor and from that data turn an LED on and off. The IR data would come from a common remote control. 
+
+The initial set up was fairly straight-forward. It involved attaching the pins from an IR sensor to the MSP430. 
+
+A simple diagram for the IR sensor is shown here
+
+![alt tag](http://imgur.com/TR597IB)
+
+Here is the actual connection to the MSP430
+
+![alt tag](http://i.imgur.com/4ht6UAH.jpg)
+
+
 
 ###Lab Functionality
-The transition to functionality started with the start5.c file which contained the outline of the code pictured below
+The transition to functionality started with the start5.c file which contained an outline of the code pictured below
 
 ![alt tag](http://ece382.com/labs/lab5/schematic.jpg)
 
@@ -114,44 +128,32 @@ The init funciton was already complete so I began with the interrupts.
 First to check if it was rising or falling edge the switch on pin was created. Case 0 is falling edge and Case  1 is rising edge.
 
 ```C
-#pragma vector = PORT2_VECTOR			// This is from the MSP430G2553.h file
+case 0:						// !!!!!!!!!NEGATIVE EDGE!!!!!!!!!!
+	pulseDuration = TAR;
+	if((pulseDuration < maxLogic0Pulse) && (pulseDuration > minLogic0Pulse)){
+		irPacket = (irPacket << 1) | 0;
+	}
+	if((pulseDuration < maxLogic1Pulse) && (pulseDuration > minLogic1Pulse)){
+		irPacket = (irPacket << 1) | 1;
+	}
+	packetData[packetIndex++] = pulseDuration;
+	TACTL = 0;				//turn off timer A e.w.
+	LOW_2_HIGH; 				// Setup pin interrupr on positive edge
+	break;
 
-__interrupt void pinChange (void) {
-
-	int8	pin;
-	int16	pulseDuration;			// The timer is 16-bits
-
-	if (IR_PIN)		pin=1;	else pin=0;
-
-	switch (pin) {					// read the current pin level
-		case 0:						// !!!!!!!!!NEGATIVE EDGE!!!!!!!!!!
-			pulseDuration = TAR;
-			if((pulseDuration < maxLogic0Pulse) && (pulseDuration > minLogic0Pulse)){
-				irPacket = (irPacket << 1) | 0;
-			}
-			if((pulseDuration < maxLogic1Pulse) && (pulseDuration > minLogic1Pulse)){
-				irPacket = (irPacket << 1) | 1;
-			}
-			packetData[packetIndex++] = pulseDuration;
-			TACTL = 0;				//turn off timer A e.w.
-			LOW_2_HIGH; 				// Setup pin interrupr on positive edge
-			break;
-
-		case 1:							// !!!!!!!!POSITIVE EDGE!!!!!!!!!!!
-			TAR = 0x0000;						// time measurements are based at time 0
-			TA0CCR0 = 0x2710;
-			TACTL = ID_3 | TASSEL_2 | MC_1 | TAIE;
-			HIGH_2_LOW; 						// Setup pin interrupr on positive edge
-			break;
-	} // end switch
-
-	P2IFG &= ~BIT6;			// Clear the interrupt flag to prevent immediate ISR re-entry
-
-} // end pinChange ISR
 ```
-Case 1: The most important aspect of case 1 was building the IR data packet. This was done using known values for length of 1s and 0s from a given remote.
+Case 0: The most important aspect of case 0 was building the IR data packet. This was done using known values for length of 1s and 0s from a given remote. The length was determined from initial waveform readings. 
 
-Case 2: On the positive edge, the timers and interrups had to be properly set. TACCR0 was calculated for the proper rollover time. 
+```C
+case 1:							// !!!!!!!!POSITIVE EDGE!!!!!!!!!!!
+	TAR = 0x0000;						// time measurements are based at time 0
+	TA0CCR0 = 0x2710;
+	TACTL = ID_3 | TASSEL_2 | MC_1 | TAIE;
+	HIGH_2_LOW; 						// Setup pin interrupr on positive edge
+	break;
+```
+
+Case 1: On the positive edge, the timers and interrups had to be properly set. TACCR0 was calculated for the proper rollover time. 
 
 #####Timer A Vector
 The timer interrupt was a bit similar to the rising edge of the hardware interrupt in the sense that it managed settings of timers and flags. The following code accomplished what is in the picture under TimerA. It is really important to understand how the masks work and howthe XOR and bit manipulation gives the proper functionality. 
@@ -168,9 +170,15 @@ __interrupt void timerOverflow (void) {
 }
 ```
 
+#####Debugging/Problems
+Even though the process for the code was laid out clearly in the given image, I still had trouble implementing it for a while. The hardest part was simply getting an understanding of how the timer worked into the overall scheme. It also took a while to realize how the masks worked and what something like ``` TACTL ^= TAIE; ``` would do. 
+An important part of the debugging process was setting a breakpoint in the timerA interrupt to check the packets recived from the remote. If the packets were different than what was expected based off of the inital waveform readings, something was very wrong. 
 
-![alt tag](http://i.imgur.com/4ht6UAH.jpg)
+####Functionality
+I was able to get the required functionality working well and it can be seen in the below video
 
 [![IMAGE ALT TEXT HERE](http://img.youtube.com/vi/P8m6kqYVIsk/0.jpg)](http://www.youtube.com/watch?v=P8m6kqYVIsk)
+
+Some thoughts on A functionality: I would imagine A functionality wouldn't be extremely difficult, The hardest part would be getting all the different code to work together but the main premise would be that instead of my if statements looking for button presses, they would look for packet data. 
 
 
