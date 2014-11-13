@@ -171,6 +171,6 @@ __interrupt void timerOverflow (void) {
 
 
 
-[![IMAGE ALT TEXT HERE](http://img.youtube.com/vi/P8m6kqYVIsk/0.jpg)](http://www.youtube.com/watch?v=YOUTUBE_VIDEO_P8m6kqYVIsk)
+[![IMAGE ALT TEXT HERE](http://img.youtube.com/vi/P8m6kqYVIsk/0.jpg)](http://www.youtube.com/watch?v=P8m6kqYVIsk)
 
 
